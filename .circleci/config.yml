@@ -1,24 +1,110 @@
-version: 2.1
+version: 2.0
+
 jobs:
-  knowledge-platform-jobs-build:
+  test:
+    parallelism: 2 # parallel containers to split the test cases.
+    docker:
+      - image: circleci/openjdk:stretch
     working_directory: ~/kp
-    machine:
-      image: ubuntu-2004:202008-01
     steps:
-      - checkout:
-          path: ~/kp
+      - checkout
       - restore_cache:
-          key: kp-jobs-dependency-cache-{{ checksum "pom.xml" }}
-      - run: mvn clean scoverage:report
-      - save_cache:
-          key: kp-jobs-dependency-cache-{{ checksum "pom.xml" }}
-          paths: ~/.m2
+          keys:
+            - kp-jobs-dependency-cache-{{ checksum "pom.xml" }} # appends cache key with a hash of pom.xml file
+            - kp-jobs-dependency-cache- # fallback in case previous cache key is not found
+      - run: |
+          mvn -Dtest=$(for file in $(circleci tests glob "./**/src/test/**/spec/*.scala" \
+          | circleci tests split --split-by=timings); \
+          do basename $file \
+          | sed -e "s/.scala/,/"; \
+          done | tr -d '\r\n') \
+          -e test
       - run:
-          name: sonar
+          name: Save test results
           command: |
-            mvn -X sonar:sonar -Dlog4j.configuration=./logs sonar:sonar -Dsonar.projectKey=project-sunbird_knowledge-platform-jobs -Dsonar.organization=project-sunbird -Dsonar.host.url=https://sonarcloud.io -Dsonar.exclusions=**/cert-processor/** -Dsonar.scala.coverage.reportPaths=/home/circleci/kp/target/scoverage.xml
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - save_cache:
+            paths:
+              - ~/.m2
+            key: kp-jobs-dependency-cache-{{ checksum "pom.xml" }}
+      - store_test_results:
+          path: ~/test-results
+      - run:
+           name: sonar
+           command: |
+             mvn -X sonar:sonar -Dlog4j.configuration=./logs sonar:sonar -Dsonar.projectKey=project-sunbird_knowledge-platform-jobs -Dsonar.organization=project-sunbird -Dsonar.host.url=https://sonarcloud.io -Dsonar.exclusions=**/cert-processor/** -Dsonar.scala.coverage.reportPaths=/home/circleci/kp/target/scoverage.xml
+          
+  build:
+    docker:
+      - image: circleci/openjdk:stretch
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - kp-jobs-dependency-cache-{{ checksum "pom.xml" }} # appends cache key with a hash of pom.xml file
+            - kp-jobs-dependency-cache- # fallback in case previous cache key is not foun
+      - run: mvn clean install -DskipTests
+      - save_cache:
+            paths:
+              - ~/.m2
+            key: kp-jobs-dependency-cache-{{ checksum "pom.xml" }}
+
 workflows:
-  version: 2.1
-  build_and_test:
+  version: 2
+
+  build-then-test:
     jobs:
-      - knowledge-platform-jobs-build
+      - build
+      - test:
+          requires:
+            - build
+
+
+
+
+# version: 2
+# jobs:
+#   build:
+#     working_directory: ~/my-multi-module-mvn-prj
+
+#     docker:
+#       - image: circleci/openjdk:8-jdk-stretch
+
+#     steps:
+#       - checkout
+
+#       - run:
+#           name: Generate cumulative pom.xml checksum
+#           command: |
+#             find . -type f -name "pom.xml" -exec sh -c "sha256sum {} >> ~/pom-checksum.tmp" \;
+#             sort -o ~/pom-checksum ~/pom-checksum.tmp
+#           when: always
+
+#       - restore_cache:
+#           keys:
+#             - kp-jobs-dependency-cache-{{ checksum "pom.xml" }} # appends cache key with a hash of pom.xml file
+#             - kp-jobs-dependency-cache- # fallback in case previous cache key is not found
+
+#       - run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+
+#       - save_cache:
+#           paths:
+#             - ~/.m2
+#           key: my-multi-module-mvn-prj-{{ checksum "~/pom-checksum" }}
+
+#       - run: mvn package
+
+#       - run:
+#           name: Save test results
+#           command: |
+#             mkdir -p ~/test-results/junit/
+#             find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+#           when: always
+
+#       - store_test_results:
+#           path: ~/test-results
+
+#       - store_artifacts:
+#           path: my-service/target/my-service.jar
