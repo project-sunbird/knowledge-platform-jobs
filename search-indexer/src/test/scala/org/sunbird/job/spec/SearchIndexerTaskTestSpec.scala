@@ -281,7 +281,7 @@ class SearchIndexerTaskTestSpec extends BaseTestSpec {
 
   "createCompositeSearchIndex" should "create the elastic search index for composite Search" in {
     Mockito.reset(mockElasticUtil)
-    when(mockElasticUtil.addIndex(anyString(), anyString())).thenReturn(false)
+    when(mockElasticUtil.addIndex(anyString(), anyString(), anyString())).thenReturn(false)
     val compositeFunc = new CompositeSearchIndexerFunction(jobConfig)
     val check = compositeFunc.createCompositeSearchIndex()(mockElasticUtil)
     check should be(false)
@@ -289,7 +289,7 @@ class SearchIndexerTaskTestSpec extends BaseTestSpec {
 
   "createDialCodeIndex" should "create the elastic search index for dialcode" in {
     Mockito.reset(mockElasticUtil)
-    when(mockElasticUtil.addIndex(anyString(), anyString())).thenReturn(false)
+    when(mockElasticUtil.addIndex(anyString(), anyString(), anyString())).thenReturn(false)
     val compositeFunc = new DIALCodeIndexerFunction(jobConfig)
     val check = compositeFunc.createDialCodeIndex()(mockElasticUtil)
     check should be(false)
@@ -297,7 +297,7 @@ class SearchIndexerTaskTestSpec extends BaseTestSpec {
 
   "createDialCodeIndex" should "create the elastic search index for dialcode metric" in {
     Mockito.reset(mockElasticUtil)
-    when(mockElasticUtil.addIndex(anyString(), anyString())).thenReturn(false)
+    when(mockElasticUtil.addIndex(anyString(), anyString(), anyString())).thenReturn(false)
     val compositeFunc = new DIALCodeMetricsIndexerFunction(jobConfig)
     val check = compositeFunc.createDialCodeIndex()(mockElasticUtil)
     check should be(false)

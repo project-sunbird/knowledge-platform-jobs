@@ -2,12 +2,12 @@ package org.sunbird.job.util
 
 import java.io.IOException
 import java.util
-
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HttpHost
 import org.apache.http.client.config.RequestConfig
+import org.elasticsearch.action.admin.indices.alias.Alias
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
 import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
@@ -55,11 +55,12 @@ class ElasticSearchUtil(connectionInfo: String, indexName: String, indexType: St
     }
   }
 
-  def addIndex(settings: String, mappings: String): Boolean = {
+  def addIndex(settings: String, mappings: String, alias: String = ""): Boolean = {
     var response = false
     val client = esClient
     if (!isIndexExists()) {
       val createRequest = new CreateIndexRequest(indexName)
+      if (StringUtils.isNotBlank(alias)) createRequest.alias(new Alias(alias))
       if (StringUtils.isNotBlank(settings)) createRequest.settings(Settings.builder.loadFromSource(settings, XContentType.JSON))
       if (StringUtils.isNotBlank(indexType) && StringUtils.isNotBlank(mappings)) createRequest.mapping(indexType, mappings, XContentType.JSON)
       val createIndexResponse = client.indices.create(createRequest)
