@@ -9,6 +9,7 @@ import org.sunbird.job.assetenricment.domain.Event
 import org.sunbird.job.assetenricment.models.Asset
 import org.sunbird.job.assetenricment.task.AssetEnrichmentConfig
 import org.sunbird.job.assetenricment.util._
+import org.sunbird.job.assetenricment.util.CloudStorageUtil
 import org.sunbird.job.util._
 
 import java.io.File
