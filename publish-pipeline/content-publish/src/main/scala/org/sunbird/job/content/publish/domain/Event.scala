@@ -22,8 +22,8 @@ class Event(eventMap: java.util.Map[String, Any], partition: Int, offset: Long) 
   def objectType: String = readOrDefault[String]("edata.metadata.objectType", "")
 
   def pkgVersion: Double = {
-    val pkgVersion = readOrDefault[Int]("edata.metadata.pkgVersion", 0)
-    pkgVersion.toDouble
+    val pkgVersion = readOrDefault[Double]("edata.metadata.pkgVersion", 0)
+    pkgVersion
   }
 
   def validEvent(config: ContentPublishConfig): Boolean = {
