@@ -46,4 +46,23 @@ class CloudStorageUtil(config: PublishConfig) extends Serializable {
 		Array[String](objectKey, url)
 	}
 
+	def copyObjectsByPrefix(source: String, destination: String) = {
+		getService.copyObjects(getContainerName, source, getContainerName, destination, Option.apply(true))
+	}
+
+	def getURI(prefix: String, isDirectory: Option[Boolean]): String = {
+		getService.getUri(getContainerName, prefix, isDirectory)
+	}
+
+	def uploadDirectory(folderName: String, directory: File, slug: Option[Boolean] = Option(true)): Array[String] = {
+		val slugFile = if (slug.getOrElse(true)) Slug.createSlugFile(directory) else directory
+		val objectKey = folderName + File.separator
+		val url = getService.upload(getContainerName(), slugFile.getAbsolutePath, objectKey, Option.apply(true), Option.apply(1), Option.apply(5), Option.empty)
+		Array[String](objectKey, url)
+	}
+
+	def deleteFile(key: String, isDirectory: Option[Boolean] = Option(false)) {
+		getService.deleteObject(getContainerName, key, isDirectory)
+	}
+
 }

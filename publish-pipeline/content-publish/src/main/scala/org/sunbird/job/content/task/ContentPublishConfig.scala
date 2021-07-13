@@ -65,4 +65,11 @@ class ContentPublishConfig(override val config: Config) extends PublishConfig(co
   val supportedMimeType: util.List[String] = if (config.hasPath("content.mimeType")) config.getStringList("content.mimeType") else util.Arrays.asList[String]("application/pdf")
   val streamableMimeType: util.List[String] = if (config.hasPath("content.stream.mimeType")) config.getStringList("content.stream.mimeType") else util.Arrays.asList[String]("video/mp4")
   val isStreamingEnabled: Boolean = if (config.hasPath("content.stream.enabled")) config.getBoolean("content.stream.enabled") else false
+
+  val contentFolder: String = if(config.hasPath("cloud_storage.content.folder")) config.getString("cloud_storage.content.folder") else "content"
+  val artifactFolder: String = if(config.hasPath("cloud_storage.artifact.folder")) config.getString("cloud_storage.artifact.folder") else "artifact"
+  val retryAssetDownloadsCount: Integer = if(config.hasPath("content.retry_asset_download_count")) config.getInt("content.retry_asset_download_count") else 1
+  val pluginMediaBaseUrl = if(config.hasPath("plugin.media.base.url")) config.getString("plugin.media.base.url") else ""
+  val contentMediaBaseUrl = if(config.hasPath("content.media.base.url")) config.getString("plugin.media.base.url") else ""
+  val isECARExtractionEnabled = if(config.hasPath("content.isECARExtractionEnabled")) config.getBoolean("content.isECARExtractionEnabled") else true
 }
